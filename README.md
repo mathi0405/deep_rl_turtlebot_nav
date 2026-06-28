@@ -1,4 +1,3 @@
-# deep_rl_turtlebot_nav
 # 🐢🧠 Deep Reinforcement Learning for TurtleBot3 Navigation
 
 Welcome to the Master's project repository for Autonomous Mapless Navigation. 
