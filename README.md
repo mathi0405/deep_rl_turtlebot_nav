@@ -20,12 +20,12 @@ To make evaluation as easy as possible, this entire project is containerized. **
 Open a terminal and run this command so Docker is allowed to pop open the Gazebo window:
 ```bash
 xhost +local:root
-Step 2: Open the project folder
+### Step 2: Open the project folder
 Navigate into the root folder of this repository where the docker-compose.yml file is located:
 
 Bash
 cd path/to/deep_rl_turtlebot_nav
-Step 3: Launch the magic command
+### Step 3: Launch the magic command
 Run the following command. It will automatically build the ROS environment, install PyTorch, compile the workspace, and launch the training simulation:
 
 Bash
