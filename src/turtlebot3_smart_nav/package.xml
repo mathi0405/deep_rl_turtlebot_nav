@@ -4,7 +4,7 @@
   <version>1.0.0</version>
   <description>DRL Mapless Navigation (DQN, DDPG, TD3, SAC, CrossQ)</description>
   <maintainer email="dev@todo.todo">Research Team</maintainer>
-  <license>MIT</license>
+  <license>NoLicense</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
