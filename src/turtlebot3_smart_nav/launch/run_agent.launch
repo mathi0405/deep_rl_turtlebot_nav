@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="mode" default="train" doc="Mode: train or test"/>
+
+  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_stage_4.launch">
+    <arg name="x_pos" value="-0.7"/>
+    <arg name="y_pos" value="0.0"/>
+    <arg name="z_pos" value="0.0"/>
+  </include>
+
+  <group if="$(eval arg('mode') == 'train')">
+    <node pkg="turtlebot3_smart_nav" type="main_train.py" name="rl_train_node" output="screen" />
+  </group>
+
+  <group if="$(eval arg('mode') == 'test')">
+    <node pkg="turtlebot3_smart_nav" type="evaluate_agent.py" name="rl_eval_node" output="screen" />
+  </group>
+</launch>
