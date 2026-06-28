@@ -1,12 +1,7 @@
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
-src/turtlebot3_smart_nav/models/*.pth
-src/turtlebot3_smart_nav/models/*.pt
 .vscode/
-.idea/
 *.log
 devel/
 build/
+src/turtlebot3_smart_nav/models/*.pth
