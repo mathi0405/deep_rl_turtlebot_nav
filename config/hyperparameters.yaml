@@ -1,0 +1,20 @@
+# Deep Q-Network Optimization Parameters
+agent_config:
+  network_architecture: "DQN_LiDAR_MLP"
+  learning_rate: 0.00025
+  discount_factor_gamma: 0.99
+  experience_replay_size: 100000
+  mini_batch_size: 64
+  target_network_update_freq: 2000
+
+exploration_config:
+  epsilon_initial: 1.0
+  epsilon_decay_rate: 0.992
+  epsilon_minimum: 0.05
+
+environment_config:
+  lidar_scan_beams: 24
+  maximum_steps_per_episode: 500
+  goal_reach_reward: 120.0
+  collision_penalty: -25.0
+  time_step_penalty: -0.05
