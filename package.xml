@@ -2,8 +2,8 @@
 <package format="2">
   <name>turtlebot3_smart_navigation</name>
   <version>1.0.0</version>
-  <description>Deep Reinforcement Learning based mapless navigation for TurtleBot3</description>
-  <maintainer email="developer@university.todo">Research Team</maintainer>
+  <description>Reinforcement-Learning-Based-Smart-Navigation-for-TurtleBot</description>
+  <maintainer email="manichandan.mathi@stud.th-deg.de">Research Team</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
