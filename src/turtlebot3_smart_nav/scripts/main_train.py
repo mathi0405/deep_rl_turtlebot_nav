@@ -2,59 +2,59 @@
 import rospy
 import yaml
 import torch
-import torch.optim as optim
-import random
+import numpy as np
 import os
 from collections import deque
-
 from env_bridge import TurtleBot3NavigationEnv
-from agent_network import TurtleBotDQN
+
+from algorithms import TurtleBotDQN, DDPGActor, DDPGCritic, TD3Actor, TD3Critic, SACActor, SACCritic, CrossQActor, CrossQCritic
+
+def get_agent(algo_name):
+    if algo_name == "DQN": return TurtleBotDQN(), None
+    elif algo_name == "DDPG": return DDPGActor(), DDPGCritic()
+    elif algo_name == "TD3": return TD3Actor(), TD3Critic()
+    elif algo_name == "SAC": return SACActor(), SACCritic()
+    elif algo_name == "CrossQ": return CrossQActor(), CrossQCritic()
+    else: raise ValueError(f"Unknown Algorithm: {algo_name}")
 
 def main():
-    rospy.init_node('drl_training_node', anonymous=True)
-    
+    rospy.init_node('rl_train_node', anonymous=True)
     config_path = os.path.join(os.path.dirname(__file__), '../config/training_params.yaml')
-    with open(config_path, 'r') as file:
-        config = yaml.safe_load(file)
+    with open(config_path, 'r') as f: config = yaml.safe_load(f)
         
-    lr = config['agent_config']['learning_rate']
+    algo_name = config['agent_config']['active_algorithm']
+    rospy.loginfo(f"--- STARTING TRAINING FRAMEWORK: {algo_name} ---")
     
     env = TurtleBot3NavigationEnv()
-    policy_net = TurtleBotDQN()
-    optimizer = optim.Adam(policy_net.parameters(), lr=lr)
-    memory_buffer = deque(maxlen=config['agent_config']['experience_replay_size'])
-    
-    rospy.loginfo("Initialization complete. Starting DRL training loop...")
+    actor, critic = get_agent(algo_name)
+    memory = deque(maxlen=config['agent_config']['experience_replay_size'])
     
     for episode in range(config['environment_config']['maximum_steps_per_episode']):
-        state = env.reset()
-        
-        # Add padding to make state 26-dimensional (24 Lidar + 2 Goal metrics)
-        padded_state = np.append(state, [1.0, 0.0]) 
-        state_tensor = torch.FloatTensor(padded_state).unsqueeze(0)
+        state = np.append(env.reset(), [1.0, 0.0])
         done = False
         total_reward = 0
         
         while not done and not rospy.is_shutdown():
-            if random.random() < 0.1:
-                action = random.randint(0, 4)
-            else:
-                with torch.no_grad():
-                    action = policy_net(state_tensor).argmax().item()
+            state_tensor = torch.FloatTensor(state).unsqueeze(0)
+            
+            # Action Selection Block
+            with torch.no_grad():
+                if algo_name == "DQN":
+                    action = actor(state_tensor).argmax().item() # Discrete
+                else:
+                    action = actor(state_tensor).squeeze().numpy() # Continuous
                     
-            next_state, reward, done = env.step(action)
+            next_state_raw, reward, done = env.step(action)
+            next_state = np.append(next_state_raw, [1.0, 0.0])
             total_reward += reward
             
-            padded_next = np.append(next_state, [1.0, 0.0])
-            memory_buffer.append((padded_state, action, reward, padded_next, done))
+            memory.append((state, action, reward, next_state, done))
+            state = next_state
             
-            state_tensor = torch.FloatTensor(padded_next).unsqueeze(0)
-            padded_state = padded_next
+            # TODO: Team inserts specific optimization backprop rules (Loss functions) here.
             
-        rospy.loginfo(f"Episode {episode} | Total Reward: {total_reward:.2f}")
+        rospy.loginfo(f"Episode {episode} | Reward: {total_reward:.2f}")
 
 if __name__ == '__main__':
-    try:
-        main()
-    except rospy.ROSInterruptException:
-        pass
+    try: main()
+    except rospy.ROSInterruptException: pass
