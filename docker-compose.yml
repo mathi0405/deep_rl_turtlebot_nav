@@ -18,4 +18,4 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     stdin_open: true
     tty: true
-    command: bash -c "catkin_make && roslaunch turtlebot3_smart_nav start_rl_agent.launch"
+    command: bash -c "source install/setup.bash && ros2 launch turtlebot3_smart_nav start_rl_agent.launch.py mode:=train"
