@@ -163,3 +163,7 @@ GitHub: [@mathi0405](https://github.com/mathi0405)
 ## 📄 License
 
 This project is released under the [MIT License](https://opensource.org/licenses/MIT).
+
+
+
+Refer to the ROS2 Foxy and Gazebo installation guides before running the project to ensure all dependencies are installed.
