@@ -1,14 +1,19 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>turtlebot3_smart_nav</name>
-  <version>1.0.0</version>
-  <description>DRL Mapless Navigation (DQN, DDPG, TD3, SAC, CrossQ)</description>
-  <maintainer email="dev@todo.todo">Research Team</maintainer>
-  <license>NoLicense</license>
+  <version>0.2.0</version>
+  <description>Finite Gazebo navigation training and evaluation with SAC.</description>
+  <maintainer email="108810456+mathi0405@users.noreply.github.com">Mani Chandan Mathi</maintainer>
+  <license>Unspecified; see upstream attribution in README</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
-  <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>gazebo_msgs</depend>
+  <depend>std_srvs</depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>turtlebot3_description</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
 </package>

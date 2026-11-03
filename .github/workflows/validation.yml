@@ -1,0 +1,28 @@
+name: Python training pipeline
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.10', '3.11']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pip install numpy==1.26.4 ruff==0.14.3 wheel
+      - run: python -m pip install --no-deps .
+      - run: ruff check src/turtlebot3_smart_nav/src tests scripts/verify_pipeline.py
+      - run: python -m unittest discover -s tests -v
+      - run: python scripts/verify_pipeline.py --out artifacts/ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cpu-evidence-${{ matrix.python }}
+          path: artifacts/
+          if-no-files-found: ignore

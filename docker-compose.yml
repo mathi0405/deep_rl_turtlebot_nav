@@ -1,21 +1,9 @@
-version: '3.8'
-
 services:
-  turtlebot_drl:
-    build: 
-      context: ./docker
-      dockerfile: Dockerfile
-    container_name: turtlebot_drl_container
-    network_mode: "host"
-    environment:
-      - DISPLAY=${DISPLAY}
-      - QT_X11_NO_MITSHM=1
-      - TURTLEBOT3_MODEL=burger
+  navigation:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     volumes:
-      # Mounts the local src directory into the container's catkin_ws
-      - ./src:/root/catkin_ws/src
-      # Allows Gazebo GUI to forward to the host machine
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    stdin_open: true
-    tty: true
-    command: bash -c "source /root/catkin_ws/devel/setup.bash && roslaunch turtlebot3_smart_nav run_agent.launch mode:=train"
+      - ./runs:/results
+    init: true
+    command: ["roslaunch", "turtlebot3_smart_nav", "simulation.launch", "gui:=false"]
