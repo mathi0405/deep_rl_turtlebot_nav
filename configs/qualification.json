@@ -1,0 +1,9 @@
+{
+  "version": "cpu-qualification-v1",
+  "backend": "cpu-kinematic-v1",
+  "first_seed": 100000,
+  "episodes": 50,
+  "max_steps": 250,
+  "frozen_before_training": true,
+  "interpretation": "Finite held-out initial conditions within the same synthetic world; not hardware or out-of-distribution validation. Do not tune on this suite."
+}
