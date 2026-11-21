@@ -34,6 +34,9 @@ jobs:
       - name: Logs on failure
         if: failure()
         run: docker compose logs --tail 200 navigation
+      - name: Make container-written results readable
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" runs || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
