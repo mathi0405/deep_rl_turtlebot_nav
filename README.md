@@ -4,9 +4,10 @@ An executable SAC training, checkpoint and evaluation pipeline with a determinis
 CPU navigation simulator and a separate ROS1 Noetic/Gazebo adapter.
 
 The CPU pipeline has been executed, including real gradient updates, non-pickle
-checkpoint loading and held-out evaluation across three training seeds. Gazebo
-integration is implemented but has not been executed on this revision: the local
-Docker engine was unavailable. No physical-robot result is claimed.
+checkpoint loading and held-out evaluation across three training seeds. The
+ROS1 Noetic/Gazebo container path has also been executed: a CPU-trained policy
+reached 19/20 in one fixed Gazebo world ([results](docs/GAZEBO_RESULTS.md)), and
+CI builds the container and runs a Gazebo smoke episode. No physical-robot result is claimed.
 
 ## Quick start without ROS
 

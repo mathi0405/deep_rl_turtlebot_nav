@@ -44,7 +44,7 @@ stability, sensor rejection, checkpoint rejection/roundtrip, deterministic
 evaluation, error cleanup and ROS message/service contracts with mocks.
 An installed wheel also executes the full train/save/load/evaluate proof.
 
-ROS1/Gazebo container execution is unverified on this revision. The local
-Docker engine was unavailable; the applicant explicitly chose CPU-only
-validation for now. Mock ROS tests and these ideal-sensor results do not
-establish Gazebo compatibility, sim-to-real transfer or hardware safety.
+These ideal-sensor CPU results do not by themselves establish Gazebo
+compatibility, sim-to-real transfer or hardware safety. The ROS1/Gazebo container
+path was executed separately on 22 November 2026; see
+[GAZEBO_RESULTS.md](GAZEBO_RESULTS.md). Hardware remains unverified.

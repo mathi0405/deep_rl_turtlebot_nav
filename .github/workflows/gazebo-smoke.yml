@@ -1,0 +1,44 @@
+name: Gazebo smoke
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gazebo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Noetic/Gazebo container
+        run: docker compose build
+      - name: Start headless Gazebo
+        run: docker compose up -d
+      - name: Wait for TurtleBot spawn and sensor topics
+        run: |
+          for i in $(seq 1 40); do
+            if docker compose exec -T navigation /workspace/docker/entrypoint.sh \
+                 timeout 10 rostopic echo -n1 /turtlebot_lab/scan/range_max >/dev/null 2>&1; then
+              echo "scan topic live"; exit 0
+            fi
+            sleep 5
+          done
+          docker compose logs navigation; exit 1
+      - name: One baseline episode through the ROS adapter
+        run: |
+          docker compose exec -T navigation /workspace/docker/entrypoint.sh \
+            turtlebot-nav evaluate --backend ros --baseline --episodes 1 --out /results/ci-gazebo-smoke
+          test -f runs/ci-gazebo-smoke/evaluation.json
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail 200 navigation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gazebo-smoke
+          path: runs/ci-gazebo-smoke/
+          if-no-files-found: ignore
+      - if: always()
+        run: docker compose down
