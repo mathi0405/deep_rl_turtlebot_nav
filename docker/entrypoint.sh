@@ -1,9 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 source /opt/ros/noetic/setup.bash
-if [ ! -d "/root/catkin_ws/devel" ]; then
-    echo "Building Catkin Workspace..."
-    cd /root/catkin_ws && catkin_make
-fi
-source /root/catkin_ws/devel/setup.bash
+source /workspace/install/setup.bash
 exec "$@"

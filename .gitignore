@@ -5,3 +5,9 @@ __pycache__/
 devel/
 build/
 src/turtlebot3_smart_nav/models/*.pth
+.venv*/
+*.egg-info/
+dist/
+runs/
+artifacts/
+.ruff_cache/

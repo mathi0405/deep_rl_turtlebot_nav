@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<sdf version="1.6"><world name="navigation">
+  <physics type="ode"><max_step_size>0.001</max_step_size><real_time_update_rate>1000</real_time_update_rate></physics>
+  <light name="sun" type="directional"><cast_shadows>false</cast_shadows><direction>-0.5 0.1 -0.9</direction></light>
+  <model name="floor"><static>true</static><link name="floor">
+    <collision name="c"><geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry></collision>
+    <visual name="v"><geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry></visual>
+  </link></model>
+  <model name="north"><static>true</static><pose>0 2.55 0.25 0 0 0</pose><link name="wall">
+    <collision name="c"><geometry><box><size>5.2 0.1 0.5</size></box></geometry></collision>
+    <visual name="v"><geometry><box><size>5.2 0.1 0.5</size></box></geometry></visual>
+  </link></model>
+  <model name="south"><static>true</static><pose>0 -2.55 0.25 0 0 0</pose><link name="wall">
+    <collision name="c"><geometry><box><size>5.2 0.1 0.5</size></box></geometry></collision>
+    <visual name="v"><geometry><box><size>5.2 0.1 0.5</size></box></geometry></visual>
+  </link></model>
+  <model name="east"><static>true</static><pose>2.55 0 0.25 0 0 0</pose><link name="wall">
+    <collision name="c"><geometry><box><size>0.1 5.2 0.5</size></box></geometry></collision>
+    <visual name="v"><geometry><box><size>0.1 5.2 0.5</size></box></geometry></visual>
+  </link></model>
+  <model name="west"><static>true</static><pose>-2.55 0 0.25 0 0 0</pose><link name="wall">
+    <collision name="c"><geometry><box><size>0.1 5.2 0.5</size></box></geometry></collision>
+    <visual name="v"><geometry><box><size>0.1 5.2 0.5</size></box></geometry></visual>
+  </link></model>
+  <model name="center"><static>true</static><pose>0 0 0.25 0 0 0</pose><link name="body">
+    <collision name="c"><geometry><cylinder><radius>0.35</radius><length>0.5</length></cylinder></geometry></collision>
+    <visual name="v"><geometry><cylinder><radius>0.35</radius><length>0.5</length></cylinder></geometry></visual>
+  </link></model>
+  <model name="southeast"><static>true</static><pose>1.1 -0.8 0.25 0 0 0</pose><link name="body">
+    <collision name="c"><geometry><cylinder><radius>0.28</radius><length>0.5</length></cylinder></geometry></collision>
+    <visual name="v"><geometry><cylinder><radius>0.28</radius><length>0.5</length></cylinder></geometry></visual>
+  </link></model>
+  <model name="northwest"><static>true</static><pose>-1.0 0.8 0.25 0 0 0</pose><link name="body">
+    <collision name="c"><geometry><cylinder><radius>0.28</radius><length>0.5</length></cylinder></geometry></collision>
+    <visual name="v"><geometry><cylinder><radius>0.28</radius><length>0.5</length></cylinder></geometry></visual>
+  </link></model>
+</world></sdf>

@@ -1,4 +1,3 @@
-torch>=1.10.0
-numpy>=1.21.0
-pyyaml>=6.0
-rclpy
+# ROS1 packages come from apt/Catkin; do not pip-install ROS2 rclpy.
+numpy>=1.24,<3
+torch>=2.2,<3
