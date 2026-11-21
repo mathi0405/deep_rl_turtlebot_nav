@@ -4,9 +4,10 @@ An executable SAC training, checkpoint and evaluation pipeline with a determinis
 CPU navigation simulator and a separate ROS1 Noetic/Gazebo adapter.
 
 The CPU pipeline has been executed, including real gradient updates, non-pickle
-checkpoint loading and held-out evaluation across three training seeds. Gazebo
-integration is implemented but has not been executed on this revision: the local
-Docker engine was unavailable. No physical-robot result is claimed.
+checkpoint loading and held-out evaluation across three training seeds. The
+ROS1 Noetic/Gazebo container path has also been executed: a CPU-trained policy
+reached 19/20 in one fixed Gazebo world ([results](docs/GAZEBO_RESULTS.md)), and
+CI builds the container and runs a Gazebo smoke episode. No physical-robot result is claimed.
 
 ## Quick start without ROS
 
@@ -51,7 +52,7 @@ Deterministic evaluation uses the actor mean. A missing checkpoint is an error;
 an untrained policy is never silently substituted. Exact training resume is not
 implemented, and an inference checkpoint must not be described as a resume file.
 
-See [measured CPU results](docs/CPU_RESULTS.md), [architecture](docs/ARCHITECTURE.md)
+See [measured CPU results](docs/CPU_RESULTS.md), [Gazebo execution results](docs/GAZEBO_RESULTS.md), [architecture](docs/ARCHITECTURE.md)
 and the frozen evaluation specification in `configs/qualification.json`.
 Reproducibility is within a recorded runtime, not bitwise equality across every
 PyTorch/platform release. Results describe finite, ideal-sensor2-D simulation.
@@ -66,13 +67,13 @@ the newer Python CPU path is tested separately.
 ```bash
 docker compose build
 docker compose up -d
-# Wait for successful TurtleBot spawn and namespaced scan/odom messages.
-docker compose exec navigation bash -lc 'source /workspace/install/setup.bash; rostopic list'
-docker compose exec navigation turtlebot-nav train --backend ros \
-  --steps 10000 --out /results/gazebo-train
-docker compose exec navigation turtlebot-nav evaluate --backend ros \
-  --policy /results/gazebo-train/policy.npz --out /results/gazebo-eval
+# Wait ~1 minute for the TurtleBot spawn, then check the namespaced topics.
+# `exec` bypasses the image entrypoint, so run commands through it to source ROS.
+docker compose exec navigation /workspace/docker/entrypoint.sh rostopic list
+docker compose exec navigation /workspace/docker/entrypoint.sh turtlebot-nav train --backend ros   --steps 10000 --out /results/gazebo-train
+docker compose exec navigation /workspace/docker/entrypoint.sh turtlebot-nav evaluate --backend ros   --policy /results/gazebo-train/policy.npz --out /results/gazebo-eval
 ```
+On Windows Git Bash, set `MSYS_NO_PATHCONV=1` first so container paths are not rewritten.
 
 The provided launch creates a fixed world and a Burger model. The adapter uses
 `/turtlebot_lab/cmd_vel`, `/turtlebot_lab/scan`, `/turtlebot_lab/odom` and Gazebo
@@ -97,7 +98,9 @@ sensor inputs, scan remainder coverage, command cleanup, bounded waits,
 termination/truncation semantics and reproducible evaluation. Mocked ROS tests
 are not Gazebo tests. A green CI check does not prove a robot can navigate safely.
 
-Remaining work includes executing the new container/Gazebo path, broader/noisy
+The container/Gazebo path has been executed once (see
+[Gazebo results](docs/GAZEBO_RESULTS.md): CPU-trained policy 19/20 in one fixed world).
+Remaining work includes broader/noisy
 worlds, multiple held-out maps and any supervised hardware experiment. The CPU
 world uses ideal ranges/pose and a simple unicycle; it does not model wheel slip,
 dynamics, crowds or realistic sensor errors. All policy failures are reported.
