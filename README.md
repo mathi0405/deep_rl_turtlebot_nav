@@ -110,7 +110,6 @@ results. No existing upstream licence or ownership is changed by this revision.
 
 The original project references [tomasvr/turtlebot3_drlnav](https://github.com/tomasvr/turtlebot3_drlnav)
 and [Reinis Cimurs's DRL navigation](https://github.com/reiniscimurs/DRL-robot-navigation).
-The replacement training/evaluation core was developed with AI assistance.
 [SAC equations](https://spinningup.openai.com/en/latest/algorithms/sac.html)
 follow the published method; the implementation and finite experiments here are
 not a reproduction of every result in that paper. Robot descriptions/assets and
