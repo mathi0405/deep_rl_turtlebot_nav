@@ -17,6 +17,16 @@ CPU-trained checkpoint reached 6 of 8 random goals in Gazebo without retraining
 
 ![Warehouse episodes in the CPU simulator](docs/media/warehouse_cpu_episodes.gif)
 
+## Earlier hardware run
+
+![TurtleBot3 Burger driving in the lab](docs/media/turtlebot3_real_robot.gif)
+
+An earlier version of this project (before the current rewrite, using the
+TD3/SAC networks kept in `legacy/`) was run on a physical TurtleBot3 Burger in
+the lab; the clip above is from that run, shown at 2x speed. The current code has
+no physical-robot mode, and every measured result in this README is from
+simulation.
+
 ## Quick start without ROS
 
 Use Python 3.10 or 3.11 and a new virtual environment. Install the CPU PyTorch build
