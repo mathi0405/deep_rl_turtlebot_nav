@@ -22,17 +22,17 @@ def seed_all(seed):
     torch.use_deterministic_algorithms(True)
 
 
-def environment(backend, max_steps):
+def environment(backend, max_steps, world='navigation'):
     if backend == 'cpu':
-        return KinematicEnv(max_steps=max_steps)
+        return KinematicEnv(max_steps=max_steps, world=world)
     if backend == 'ros':
         from .ros_env import ROSNavigationEnv
-        return ROSNavigationEnv(max_steps=max_steps)
+        return ROSNavigationEnv(max_steps=max_steps, world=world)
     raise ValueError('backend must be cpu or ros')
 
 
 def train(out, backend='cpu', steps=10000, seed=7, max_steps=250,
-          warmup=500, batch_size=64, width=64, learning_rate=3e-4):
+          warmup=500, batch_size=64, width=64, learning_rate=3e-4, world='navigation'):
     seed_all(seed)
     if (steps <= 0 or max_steps <= 0 or warmup < batch_size or batch_size < 2
             or steps <= warmup or not 4 <= width <= 256):
@@ -40,11 +40,11 @@ def train(out, backend='cpu', steps=10000, seed=7, max_steps=250,
     agent = SAC(width=width, learning_rate=learning_rate)
     replay = Replay(26, max(batch_size, min(steps, 100000)), seed)
     rng = np.random.default_rng(seed)
-    env = environment(backend, max_steps)
+    env = environment(backend, max_steps, world)
     try:
         output = new_directory(out)
         source = source_digest()
-        meta = dict(backend=env.backend, source_sha256=source, runtime=runtime(), seed=seed,
+        meta = dict(backend=env.backend, world=env.world.name, source_sha256=source, runtime=runtime(), seed=seed,
                     requested_steps=steps, max_steps=max_steps, warmup=warmup,
                     batch_size=batch_size, inference_checkpoint_only=True,
                     observation_contract='24range/max3.5m,distance/8m,bearing/pi; clipped distance',
@@ -84,7 +84,7 @@ def train(out, backend='cpu', steps=10000, seed=7, max_steps=250,
 
 
 def evaluate(out, policy, backend='cpu', episodes=20, seed=10000, max_steps=250,
-             baseline=False, allow_backend_transfer=False):
+             baseline=False, allow_backend_transfer=False, world='navigation'):
     seed_all(seed)
     if episodes < 1 or max_steps < 1:
         raise ValueError('episodes/max_steps must be positive')
@@ -93,11 +93,14 @@ def evaluate(out, policy, backend='cpu', episodes=20, seed=10000, max_steps=250,
     if not baseline and not policy:
         raise ValueError('checkpoint required unless --baseline is explicit')
     agent, metadata = (None, {}) if baseline else load_policy(policy)
-    env = environment(backend, max_steps)
+    env = environment(backend, max_steps, world)
     try:
         transfer = bool(not baseline and metadata['backend'] != env.backend)
         if transfer and not allow_backend_transfer:
             raise ValueError('checkpoint backend differs; explicit --allow-backend-transfer required')
+        trained_world = metadata.get('world', 'navigation')
+        if not baseline and trained_world != env.world.name and not allow_backend_transfer:
+            raise ValueError('checkpoint was trained in the '+trained_world+' world; explicit --allow-backend-transfer required')
         output = new_directory(out)
         source = source_digest()
         records = []
@@ -132,7 +135,7 @@ def evaluate(out, policy, backend='cpu', episodes=20, seed=10000, max_steps=250,
                   for key in ['success', 'obstacle_stop', 'timeout']}
         if sum(counts.values()) != episodes:
             raise RuntimeError('unclassified evaluation outcome')
-        summary = dict(backend=env.backend, source_sha256=source, runtime=runtime(), seed=seed,
+        summary = dict(backend=env.backend, world=env.world.name, source_sha256=source, runtime=runtime(), seed=seed,
                        max_steps=max_steps, episodes=records, counts=counts,
                        policy='geometric-baseline' if baseline else str(policy),
                        policy_sha256=None if baseline else digest(policy), checkpoint_metadata=metadata,

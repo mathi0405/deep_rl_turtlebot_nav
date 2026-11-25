@@ -17,6 +17,8 @@ def main(argv=None):
         p.add_argument('--out', required=True, help='New output directory; existing directories are refused')
         p.add_argument('--seed', type=int, default=7 if p is training else 10000)
         p.add_argument('--max-steps', type=int, default=250)
+        p.add_argument('--world', choices=['navigation', 'warehouse'], default='navigation',
+                       help='navigation: original 5x5 m arena; warehouse: 8x6 m shelving and pallets')
     training.add_argument('--steps', type=int, default=10000)
     training.add_argument('--warmup', type=int, default=500)
     training.add_argument('--batch-size', type=int, default=64)

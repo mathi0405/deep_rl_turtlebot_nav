@@ -7,15 +7,22 @@ import threading
 import time
 import numpy as np
 from .sensors import SensorError, observation, transition_reward, velocity
-from .simulation import episode_layout
+from .simulation import episode_layout, get_world
+
+
+BACKENDS = {'navigation': 'ros1-noetic-gazebo-world-v1',
+            'warehouse': 'ros1-noetic-gazebo-warehouse-v1'}
 
 
 class ROSNavigationEnv:
-    backend = 'ros1-noetic-gazebo-world-v1'
+    backend = BACKENDS['navigation']
+    world = get_world('navigation')
 
-    def __init__(self, max_steps=250, timeout=5.0):
+    def __init__(self, max_steps=250, timeout=5.0, world='navigation'):
         if max_steps < 1 or not math.isfinite(timeout) or timeout <= 0:
             raise ValueError('invalid ROS environment limits')
+        self.world = get_world(world)
+        self.backend = BACKENDS[self.world.name]
         import rospy
         from gazebo_msgs.msg import ModelState
         from gazebo_msgs.srv import SetModelState
@@ -112,7 +119,15 @@ class ROSNavigationEnv:
         self._command()
         self._call('pause_physics')
         self._call('reset_simulation')
-        start, self.goal = episode_layout(seed)
+        start, self.goal = episode_layout(seed, self.world)
+        if self.world.name != 'navigation':
+            # Visual-only marker (no collision, invisible to the LiDAR) at the sampled goal.
+            marker = self.ModelState()
+            marker.model_name = 'goal_marker'
+            marker.reference_frame = 'world'
+            marker.pose.position.x, marker.pose.position.y = float(self.goal[0]), float(self.goal[1])
+            marker.pose.orientation.w = 1.0
+            self._call('set_model_state', marker)
         model = self.ModelState()
         model.model_name = 'turtlebot3_burger'
         model.reference_frame = 'world'
