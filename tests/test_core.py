@@ -6,7 +6,10 @@ from unittest.mock import patch
 import numpy as np
 import torch
 from turtlebot_nav.sensors import SensorError, lidar_bins, observation, transition_reward, velocity
-from turtlebot_nav.simulation import KinematicEnv
+import math
+import subprocess
+import sys
+from turtlebot_nav.simulation import WAREHOUSE, KinematicEnv, clear_position, episode_layout, ray_distances
 from turtlebot_nav.sac import Actor, Replay, SAC
 from turtlebot_nav.evidence import load_policy, save_policy, source_digest
 from turtlebot_nav.runner import evaluate, seed_all, train
@@ -198,3 +201,49 @@ class PipelineTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class WarehouseTests(unittest.TestCase):
+    def test_random_goals_are_free_reproducible_and_separated(self):
+        goals = set()
+        for seed in range(100000, 100200):
+            start, goal = episode_layout(seed, 'warehouse')
+            np.testing.assert_array_equal(start, episode_layout(seed, 'warehouse')[0])
+            self.assertTrue(clear_position(*start[:2], world=WAREHOUSE))
+            self.assertTrue(clear_position(*goal, world=WAREHOUSE))
+            self.assertGreater(np.linalg.norm(start[:2]-goal), WAREHOUSE.min_separation)
+            goals.add(tuple(np.round(goal, 3)))
+        self.assertEqual(len(goals), 200)
+
+    def test_ray_casting_matches_ray_marching(self):
+        angles = np.linspace(-math.pi, math.pi, 24, endpoint=False)
+        for x, y in [(-3.4, -2.5), (0.0, 1.05), (2.0, 0.7), (-0.6, -2.35)]:
+            for angle, distance in zip(angles, ray_distances(x, y, angles, WAREHOUSE)):
+                t = 0.0
+                while t < 3.5 and clear_position(x+t*math.cos(angle), y+t*math.sin(angle), 0.0, WAREHOUSE):
+                    t += 0.002
+                self.assertAlmostEqual(min(t, 3.5), float(distance), delta=0.01)
+
+    def test_driving_into_a_rack_is_an_obstacle_stop(self):
+        env = KinematicEnv(world='warehouse')
+        env.reset(100000)
+        env.pose = np.array([-2.0, 0.6, -math.pi/2])  # facing the rack edge at y=0.05
+        for _ in range(40):
+            *_, terminated, _, info = env.step([1, 0])
+            if terminated:
+                break
+        self.assertEqual(info['outcome'], 'obstacle_stop')
+        self.assertEqual(env.backend, 'cpu-kinematic-warehouse-v1')
+
+    def test_gazebo_world_file_matches_simulator_geometry(self):
+        script = Path(__file__).resolve().parents[1]/'scripts'/'generate_world.py'
+        self.assertEqual(subprocess.run([sys.executable, str(script), '--check']).returncode, 0)
+
+    def test_cross_world_checkpoint_needs_explicit_transfer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            train(Path(tmp)/'t', steps=40, warmup=20, batch_size=4, width=8, max_steps=10, world='warehouse')
+            with self.assertRaises(ValueError):
+                evaluate(Path(tmp)/'e', Path(tmp)/'t'/'policy.npz', episodes=1, max_steps=5)
+            result = evaluate(Path(tmp)/'e2', Path(tmp)/'t'/'policy.npz', episodes=1, max_steps=5,
+                              world='warehouse')
+            self.assertEqual(result['world'], 'warehouse')

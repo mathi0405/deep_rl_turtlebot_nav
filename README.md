@@ -9,6 +9,14 @@ ROS1 Noetic/Gazebo container path has also been executed: a CPU-trained policy
 reached 19/20 in one fixed Gazebo world ([results](docs/GAZEBO_RESULTS.md)), and
 CI builds the container and runs a Gazebo smoke episode. No physical-robot result is claimed.
 
+**Warehouse world:** an 8 m x 6 m warehouse with shelving aisles, pallets, barrels and
+a column, where every episode has a randomly generated goal. SAC policies reach the
+random goal in 40/50 held-out CPU episodes (two seeds; baseline 6/50), and a
+CPU-trained checkpoint reached 6 of 8 random goals in Gazebo without retraining
+([warehouse results](docs/WAREHOUSE_RESULTS.md)).
+
+![Warehouse episodes in the CPU simulator](docs/media/warehouse_cpu_episodes.gif)
+
 ## Quick start without ROS
 
 Use Python 3.10 or 3.11 and a new virtual environment. Install the CPU PyTorch build
@@ -57,6 +65,24 @@ and the frozen evaluation specification in `configs/qualification.json`.
 Reproducibility is within a recorded runtime, not bitwise equality across every
 PyTorch/platform release. Results describe finite, ideal-sensor2-D simulation.
 
+## Warehouse world with random goals
+
+Select it with `--world warehouse` on `train` and `evaluate` (default: `navigation`,
+the original 5 m x 5 m arena, unchanged). Each episode samples a free start pose and a
+goal at least 2 m away from its seed. Use a longer step limit for the larger area:
+
+```bash
+turtlebot-nav train --world warehouse --steps 60000 --max-steps 400 --seed 11 --out runs/wh-train11
+turtlebot-nav evaluate --world warehouse --policy runs/wh-train11/policy.npz \
+  --episodes 50 --seed 100000 --max-steps 400 --out runs/wh-eval11
+```
+
+The Gazebo world is generated from the simulator geometry, so both backends see the
+same layout: edit `WAREHOUSE` in `simulation.py`, then run
+`python scripts/generate_world.py` (CI checks they match). Launch it with
+`roslaunch turtlebot3_smart_nav simulation.launch world:=warehouse`. A checkpoint
+trained in one world needs `--allow-backend-transfer` to be evaluated in another.
+
 ## ROS1 Noetic and Gazebo
 
 ROS1 Noetic is retained for compatibility with the original project. This is not
@@ -98,10 +124,10 @@ sensor inputs, scan remainder coverage, command cleanup, bounded waits,
 termination/truncation semantics and reproducible evaluation. Mocked ROS tests
 are not Gazebo tests. A green CI check does not prove a robot can navigate safely.
 
-The container/Gazebo path has been executed once (see
-[Gazebo results](docs/GAZEBO_RESULTS.md): CPU-trained policy 19/20 in one fixed world).
-Remaining work includes broader/noisy
-worlds, multiple held-out maps and any supervised hardware experiment. The CPU
+The container/Gazebo path has been executed (see
+[Gazebo results](docs/GAZEBO_RESULTS.md): CPU-trained policy 19/20 in one fixed world;
+[warehouse results](docs/WAREHOUSE_RESULTS.md): 6/8 random goals in the Gazebo warehouse).
+Remaining work includes noisy sensors, moving obstacles, multiple held-out maps and any supervised hardware experiment. The CPU
 world uses ideal ranges/pose and a simple unicycle; it does not model wheel slip,
 dynamics, crowds or realistic sensor errors. All policy failures are reported.
 
